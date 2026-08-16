@@ -1,4 +1,5 @@
 import React from 'react';
+import { WarehouseService } from '../services/warehouseService';
 import {
   Package,
   AlertTriangle,
@@ -6,11 +7,23 @@ import {
   TrendingUp,
   Clock,
   CheckCircle2,
-  Cpu,
-  ArrowUpRight
+  Cpu
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
+  const orders = WarehouseService.getOrders();
+  const inventory = WarehouseService.getInventory();
+  const alerts = WarehouseService.getAlerts();
+
+  const totalOrders = orders.length;
+  const ordersAtRisk = orders.filter(
+    (o) => o.riskLevel === 'CRITICAL' || o.riskLevel === 'HIGH'
+  ).length;
+  const lowStockCount = inventory.filter(
+    (i) => i.status === 'LOW_STOCK' || i.status === 'OUT_OF_STOCK'
+  ).length;
+  const readyToDispatch = orders.filter((o) => o.status === 'READY').length;
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -32,14 +45,14 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards Grid Placeholder */}
+      {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Orders</p>
-            <h3 className="text-2xl font-bold text-white mt-1">15</h3>
+            <h3 className="text-2xl font-bold text-white mt-1">{totalOrders}</h3>
             <p className="text-xs text-indigo-400 mt-1 flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5" /> 84% on schedule
+              <TrendingUp className="w-3.5 h-3.5" /> Live Data Foundation
             </p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
@@ -50,9 +63,9 @@ export const DashboardPage: React.FC = () => {
         <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Orders At Risk</p>
-            <h3 className="text-2xl font-bold text-amber-400 mt-1">3</h3>
+            <h3 className="text-2xl font-bold text-amber-400 mt-1">{ordersAtRisk}</h3>
             <p className="text-xs text-amber-400/80 mt-1 flex items-center gap-1">
-              <AlertTriangle className="w-3.5 h-3.5" /> Critical deadline approach
+              <Clock className="w-3.5 h-3.5" /> High priority / SLA risk
             </p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
@@ -62,10 +75,10 @@ export const DashboardPage: React.FC = () => {
 
         <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Low Stock SKUs</p>
-            <h3 className="text-2xl font-bold text-rose-400 mt-1">2</h3>
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Low/No Stock SKUs</p>
+            <h3 className="text-2xl font-bold text-rose-400 mt-1">{lowStockCount}</h3>
             <p className="text-xs text-rose-400/80 mt-1 flex items-center gap-1">
-              <AlertTriangle className="w-3.5 h-3.5" /> WM-104 below threshold
+              <AlertTriangle className="w-3.5 h-3.5" /> Reorder required
             </p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center">
@@ -76,7 +89,7 @@ export const DashboardPage: React.FC = () => {
         <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Ready to Dispatch</p>
-            <h3 className="text-2xl font-bold text-emerald-400 mt-1">4</h3>
+            <h3 className="text-2xl font-bold text-emerald-400 mt-1">{readyToDispatch}</h3>
             <p className="text-xs text-emerald-400/80 mt-1 flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" /> Quality checks passed
             </p>
@@ -87,15 +100,21 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Module Ready Notice */}
-      <div className="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 text-center space-y-3">
-        <div className="inline-flex p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-          <ArrowUpRight className="w-6 h-6" />
+      {/* Critical Active Alert Preview */}
+      <div className="p-5 rounded-2xl bg-rose-950/40 border border-rose-500/30 flex items-start space-x-4">
+        <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 shrink-0">
+          <AlertTriangle className="w-5 h-5" />
         </div>
-        <h3 className="text-lg font-bold text-white">Phase 2 Dashboard Structure Loaded</h3>
-        <p className="text-sm text-slate-400 max-w-lg mx-auto">
-          The layout and navigation structure is fully established. Data models and business logic will be initialized in Phase 3.
-        </p>
+        <div>
+          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+            <span>Critical Alert: Demo Conflict Seeding Ready</span>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/30 text-rose-300 font-mono">WM-104</span>
+          </h4>
+          <p className="text-xs text-slate-300 mt-1">
+            {alerts.find((a) => a.id === 'ALT-401')?.message ||
+              'ORD-1024 requires 10 units of WM-104 but only 7 are available in stock!'}
+          </p>
+        </div>
       </div>
     </div>
   );
