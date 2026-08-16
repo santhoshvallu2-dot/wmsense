@@ -12,7 +12,8 @@ import {
   Sparkles,
   Zap,
   ChevronRight,
-  Warehouse
+  Warehouse,
+  ShieldCheck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -33,7 +34,8 @@ const navItems: NavItem[] = [
   { name: 'Orders', path: '/orders', icon: ClipboardList, badge: '15 Active', badgeColor: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' },
   { name: 'Inventory', path: '/inventory', icon: Boxes, badge: '20 SKUs', badgeColor: 'bg-slate-800 text-slate-400 border-slate-700' },
   { name: 'Smart Allocation', path: '/allocation', icon: Cpu, badge: 'DEMO SCENARIO', badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30 font-semibold' },
-  { name: 'Picking & Packing', path: '/picking', icon: PackageCheck },
+  { name: 'Picking', path: '/picking', icon: PackageCheck },
+  { name: 'Packing & QC', path: '/packing', icon: ShieldCheck },
   { name: 'Exceptions', path: '/exceptions', icon: AlertTriangle, badge: '3 Open', badgeColor: 'bg-rose-500/20 text-rose-400 border-rose-500/30' },
   { name: 'Dispatch', path: '/dispatch', icon: Truck },
   { name: 'Analytics', path: '/analytics', icon: BarChart3 },
