@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Order } from '../../types/warehouse';
 import { WarehouseService } from '../../services/warehouseService';
+import { PriorityEngine } from '../../services/priorityEngine';
 import {
   X,
   ClipboardList,
@@ -13,7 +14,8 @@ import {
   User,
   Calendar,
   Zap,
-  TrendingUp
+  TrendingUp,
+  ShieldAlert
 } from 'lucide-react';
 
 interface OrderDetailModalProps {
@@ -29,8 +31,11 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
   const inventory = WarehouseService.getInventory();
 
+  // Run PriorityEngine evaluation on current order
+  const assessment = PriorityEngine.assessOrder(order, inventory);
+
   // Helper for priority badges
-  const getPriorityBadge = (priority: Order['priority']) => {
+  const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'CRITICAL':
         return 'bg-rose-500/20 text-rose-300 border-rose-500/40 font-bold';
@@ -39,6 +44,8 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       case 'NORMAL':
         return 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30';
       case 'LOW':
+        return 'bg-slate-800 text-slate-400 border-slate-700';
+      default:
         return 'bg-slate-800 text-slate-400 border-slate-700';
     }
   };
@@ -135,8 +142,8 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 <h3 className="text-lg font-bold text-white font-mono tracking-tight">{order.id}</h3>
-                <span className={`text-[10px] px-2.5 py-0.5 rounded-full border ${getPriorityBadge(order.priority)}`}>
-                  {order.priority}
+                <span className={`text-[10px] px-2.5 py-0.5 rounded-full border ${getPriorityBadge(assessment.priorityLevel)}`}>
+                  {assessment.priorityLevel}
                 </span>
                 <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(order.status)}`}>
                   {order.status.replace(/_/g, ' ')}
@@ -182,7 +189,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               <span className="text-[10px] uppercase font-semibold text-slate-400 flex items-center gap-1">
                 <TrendingUp className="w-3 h-3 text-indigo-400" /> Priority Score
               </span>
-              <p className="text-xs font-bold text-indigo-300 mt-1">{order.priorityScore} / 100</p>
+              <p className="text-xs font-bold text-indigo-300 mt-1">{assessment.priorityScore} / 100</p>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
@@ -216,6 +223,68 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 ))}
             </div>
           )}
+
+          {/* SMART PRIORITY & RISK ASSESSMENT PANEL */}
+          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/70 border border-indigo-500/30 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+              <div className="flex items-center space-x-2">
+                <Cpu className="w-5 h-5 text-cyan-400" />
+                <h4 className="text-sm font-bold text-white tracking-tight">Smart Priority & Risk Assessment</h4>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-slate-400">Score: <strong className="text-indigo-300 font-mono">{assessment.priorityScore}/100</strong></span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getPriorityBadge(assessment.riskLevel)}`}>
+                  Risk: {assessment.riskLevel} ({assessment.riskScore}/100)
+                </span>
+              </div>
+            </div>
+
+            {/* Reasons Explanation Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              {/* Priority Drivers */}
+              <div className="space-y-2">
+                <span className="font-semibold text-indigo-300 uppercase text-[10px] tracking-wider flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3 text-indigo-400" /> Priority Rationale
+                </span>
+                <ul className="space-y-1 text-slate-300 pl-2">
+                  {assessment.priorityReasons.map((reason, idx) => (
+                    <li key={idx} className="flex items-start gap-1.5 text-[11px]">
+                      <span className="text-indigo-400 font-bold">•</span>
+                      <span>{reason}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Risk Drivers */}
+              <div className="space-y-2">
+                <span className="font-semibold text-rose-300 uppercase text-[10px] tracking-wider flex items-center gap-1">
+                  <ShieldAlert className="w-3 h-3 text-rose-400" /> Risk Factors
+                </span>
+                {assessment.riskReasons.length === 0 ? (
+                  <p className="text-[11px] text-emerald-400 italic">No operational risks identified for this order.</p>
+                ) : (
+                  <ul className="space-y-1 text-slate-300 pl-2">
+                    {assessment.riskReasons.map((reason, idx) => (
+                      <li key={idx} className="flex items-start gap-1.5 text-[11px]">
+                        <span className="text-rose-400 font-bold">•</span>
+                        <span>{reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            {/* Recommended Action Box */}
+            <div className="p-3 rounded-xl bg-indigo-950/50 border border-indigo-500/30 flex items-center justify-between text-xs pt-3">
+              <span className="text-slate-400 font-medium">Recommended Action:</span>
+              <span className="font-bold text-amber-300 flex items-center gap-1">
+                <Zap className="w-4 h-4 text-amber-400" />
+                {assessment.recommendedAction}
+              </span>
+            </div>
+          </div>
 
           {/* Order Items Table */}
           <div className="space-y-2">
@@ -301,26 +370,6 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   );
                 })}
               </div>
-            </div>
-          </div>
-
-          {/* Order Risk & Priority Rationale Panel */}
-          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-400 flex items-center gap-1.5">
-                <Cpu className="w-4 h-4 text-cyan-400" /> Priority Engine Rationale
-              </span>
-              <span className="text-[10px] font-bold text-amber-400 font-mono">Risk Level: {order.riskLevel}</span>
-            </div>
-            <p className="text-slate-300 leading-relaxed">{order.priorityReason}</p>
-            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-              <span className="text-slate-400">Recommended Next Step:</span>
-              <span className="font-bold text-indigo-300 flex items-center gap-1">
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
-                {hasShortage
-                  ? 'Run Smart Allocation to resolve inventory conflict'
-                  : 'Send order to Picking queue'}
-              </span>
             </div>
           </div>
         </div>

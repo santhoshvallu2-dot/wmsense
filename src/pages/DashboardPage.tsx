@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WarehouseService } from '../services/warehouseService';
+import { PriorityEngine } from '../services/priorityEngine';
 import {
   PieChart,
   Pie,
@@ -30,10 +31,16 @@ export const DashboardPage: React.FC = () => {
   const alerts = WarehouseService.getAlerts();
   const pickingTasks = WarehouseService.getPickingTasks();
 
-  // 1. KPI Calculations
+  // 1. Priority Engine Single Source of Truth
+  const assessedOrders = orders.map((order) => ({
+    order,
+    assessment: PriorityEngine.assessOrder(order, inventory)
+  }));
+
+  // 2. KPI Calculations
   const totalOrders = orders.length;
-  const ordersAtRisk = orders.filter(
-    (o) => o.riskLevel === 'CRITICAL' || o.riskLevel === 'HIGH'
+  const ordersAtRisk = assessedOrders.filter(
+    ({ assessment }) => assessment.riskLevel === 'CRITICAL' || assessment.riskLevel === 'HIGH'
   );
   const totalInventorySKUs = inventory.length;
   const lowStockItems = inventory.filter(
@@ -297,7 +304,7 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            {ordersAtRisk.map((order) => (
+            {ordersAtRisk.map(({ order, assessment }) => (
               <div
                 key={order.id}
                 onClick={() => navigate('/orders')}
@@ -307,15 +314,17 @@ export const DashboardPage: React.FC = () => {
                   <div className="flex items-center space-x-2">
                     <span className="font-bold text-sm text-white font-mono">{order.id}</span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                      {order.priority}
+                      {assessment.priorityLevel} ({assessment.priorityScore}/100)
                     </span>
                     <span className="text-xs text-slate-400">({order.customer})</span>
                   </div>
-                  <p className="text-xs text-amber-300/90">{order.priorityReason}</p>
+                  <p className="text-xs text-amber-300/90">
+                    {assessment.riskReasons[0] || assessment.priorityReasons[0] || order.priorityReason}
+                  </p>
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-mono font-semibold text-slate-300">{order.status}</span>
-                  <div className="text-[10px] text-slate-500">Risk: {order.riskLevel}</div>
+                  <div className="text-[10px] font-bold text-rose-400">Risk Score: {assessment.riskScore}/100</div>
                 </div>
               </div>
             ))}

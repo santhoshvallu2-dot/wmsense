@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { WarehouseService } from '../services/warehouseService';
-import type { Order, PriorityLevel, OrderStatus } from '../types/warehouse';
+import { PriorityEngine } from '../services/priorityEngine';
+import type { Order, OrderStatus } from '../types/warehouse';
 import { OrderDetailModal } from '../components/orders/OrderDetailModal';
 import {
   ClipboardList,
@@ -17,7 +18,9 @@ import {
   ShieldAlert,
   SlidersHorizontal,
   CheckSquare,
-  Square
+  Square,
+  TrendingUp,
+  Cpu
 } from 'lucide-react';
 
 export const OrdersPage: React.FC = () => {
@@ -44,9 +47,10 @@ export const OrdersPage: React.FC = () => {
   // Dynamic KPI counts
   const totalOrders = orders.length;
   const newOrdersCount = orders.filter((o) => o.status === 'NEW').length;
-  const ordersAtRiskCount = orders.filter(
-    (o) => o.riskLevel === 'CRITICAL' || o.riskLevel === 'HIGH'
-  ).length;
+  const ordersAtRiskCount = orders.filter((o) => {
+    const assessment = PriorityEngine.assessOrder(o, inventory);
+    return assessment.riskLevel === 'CRITICAL' || assessment.riskLevel === 'HIGH';
+  }).length;
   const inProgressCount = orders.filter((o) =>
     ['PROCESSING', 'ALLOCATED', 'PARTIALLY_ALLOCATED', 'PICKING', 'PACKING', 'QUALITY_CHECK'].includes(o.status)
   ).length;
@@ -66,18 +70,20 @@ export const OrdersPage: React.FC = () => {
     { label: 'EXCEPTION', count: exceptionCount },
   ];
 
-  // Priority Rank map for custom sorting
-  const priorityRank: Record<PriorityLevel, number> = {
-    CRITICAL: 4,
-    HIGH: 3,
-    NORMAL: 2,
-    LOW: 1,
-  };
+  // Filter & Priority Engine Assessment Logic
+  const assessedOrders = useMemo(() => {
+    return orders.map((order) => {
+      const assessment = PriorityEngine.assessOrder(order, inventory);
+      return {
+        order,
+        assessment,
+      };
+    });
+  }, [orders, inventory]);
 
-  // Filter & Sort Logic
   const filteredOrders = useMemo(() => {
-    return orders
-      .filter((order) => {
+    return assessedOrders
+      .filter(({ order, assessment }) => {
         // Search filter (ID, Customer, or SKU)
         const matchesSearch =
           searchTerm === '' ||
@@ -87,7 +93,7 @@ export const OrdersPage: React.FC = () => {
 
         // Priority filter
         const matchesPriority =
-          priorityFilter === 'ALL' || order.priority === priorityFilter;
+          priorityFilter === 'ALL' || assessment.priorityLevel === priorityFilter || order.priority === priorityFilter;
 
         // Status filter
         const matchesStatus =
@@ -95,19 +101,25 @@ export const OrdersPage: React.FC = () => {
 
         // Risk filter
         const matchesRisk =
-          riskFilter === 'ALL' || order.riskLevel === riskFilter;
+          riskFilter === 'ALL' || assessment.riskLevel === riskFilter || order.riskLevel === riskFilter;
 
         return matchesSearch && matchesPriority && matchesStatus && matchesRisk;
       })
       .sort((a, b) => {
         if (sortField === 'priority') {
-          const rankA = priorityRank[a.priority];
-          const rankB = priorityRank[b.priority];
-          return sortOrder === 'asc' ? rankA - rankB : rankB - rankA;
+          return sortOrder === 'asc'
+            ? a.assessment.priorityScore - b.assessment.priorityScore
+            : b.assessment.priorityScore - a.assessment.priorityScore;
         }
 
-        let valA: any = a[sortField];
-        let valB: any = b[sortField];
+        if (sortField === 'riskLevel') {
+          return sortOrder === 'asc'
+            ? a.assessment.riskScore - b.assessment.riskScore
+            : b.assessment.riskScore - a.assessment.riskScore;
+        }
+
+        let valA: any = a.order[sortField as keyof Order];
+        let valB: any = b.order[sortField as keyof Order];
 
         if (typeof valA === 'string') {
           valA = valA.toLowerCase();
@@ -118,7 +130,7 @@ export const OrdersPage: React.FC = () => {
         if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
         return 0;
       });
-  }, [orders, searchTerm, priorityFilter, statusFilter, riskFilter, sortField, sortOrder]);
+  }, [assessedOrders, searchTerm, priorityFilter, statusFilter, riskFilter, sortField, sortOrder]);
 
   const handleClearFilters = () => {
     setSearchTerm('');
@@ -141,7 +153,7 @@ export const OrdersPage: React.FC = () => {
     if (selectedOrderIds.length === filteredOrders.length) {
       setSelectedOrderIds([]);
     } else {
-      setSelectedOrderIds(filteredOrders.map((o) => o.id));
+      setSelectedOrderIds(filteredOrders.map(({ order }) => order.id));
     }
   };
 
@@ -151,7 +163,7 @@ export const OrdersPage: React.FC = () => {
     );
   };
 
-  const getPriorityBadge = (priority: PriorityLevel) => {
+  const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'CRITICAL':
         return 'bg-rose-500/20 text-rose-300 border-rose-500/40 font-bold';
@@ -160,6 +172,8 @@ export const OrdersPage: React.FC = () => {
       case 'NORMAL':
         return 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30';
       case 'LOW':
+        return 'bg-slate-800 text-slate-400 border-slate-700';
+      default:
         return 'bg-slate-800 text-slate-400 border-slate-700';
     }
   };
@@ -189,18 +203,6 @@ export const OrdersPage: React.FC = () => {
     }
   };
 
-  // Helper for shortage check
-  const checkOrderShortage = (order: Order) => {
-    for (const item of order.items) {
-      const inv = inventory.find((i) => i.sku === item.sku);
-      const avail = inv ? inv.availableQuantity : 0;
-      if (item.quantity > avail) {
-        return { sku: item.sku, req: item.quantity, avail, shortage: item.quantity - avail };
-      }
-    }
-    return null;
-  };
-
   const ord1024 = orders.find((o) => o.id === 'ORD-1024');
 
   return (
@@ -208,9 +210,14 @@ export const OrdersPage: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Order Management & Priority Queue</h2>
+          <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <span>Order Management & Priority Queue</span>
+            <span className="text-xs px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono">
+              Smart Engine Active
+            </span>
+          </h2>
           <p className="text-xs text-slate-400">
-            Monitor, prioritize, and track warehouse orders throughout the fulfillment lifecycle.
+            Deterministic order priority scoring, SLA risk analysis, and shortage detection.
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -299,13 +306,13 @@ export const OrdersPage: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-sm text-white">Critical Shortage Order Highlighted</span>
+                <span className="font-bold text-sm text-white">Priority Engine Evaluation: ORD-1024 (Rank #1)</span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/30 text-rose-300 font-bold">
-                  ORD-1024 (CRITICAL)
+                  Score: 98/100 (CRITICAL)
                 </span>
               </div>
               <p className="text-xs text-slate-300 mt-1">
-                Order <span className="font-mono font-bold text-white">ORD-1024</span> (Customer: Apex Logistics Corp) requires <span className="font-bold text-white">10 units</span> of Ergonomic Wireless Scanner Pro (<span className="font-mono text-cyan-300">WM-104</span>), but stock has only <span className="font-bold text-rose-300">7 units available</span>. Normal order <span className="font-mono text-white">ORD-1025</span> also requires 5 units.
+                <span className="font-mono text-white font-bold">ORD-1024</span> scored <span className="font-bold text-rose-300">98/100</span> due to CRITICAL SLA deadline (&lt;2h) + stock shortage for WM-104 (Req 10 vs Avail 7). Normal Order <span className="font-mono text-white">ORD-1025</span> scored <span className="font-bold text-slate-300">55/100</span>.
               </p>
             </div>
           </div>
@@ -313,7 +320,7 @@ export const OrdersPage: React.FC = () => {
             onClick={() => setSelectedOrder(ord1024)}
             className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 font-bold text-xs transition-colors shrink-0 flex items-center gap-1.5"
           >
-            <Eye className="w-4 h-4" /> Inspect ORD-1024 Shortage
+            <Eye className="w-4 h-4" /> Inspect Priority Assessment
           </button>
         </div>
       )}
@@ -376,7 +383,7 @@ export const OrdersPage: React.FC = () => {
               onChange={(e) => setPriorityFilter(e.target.value)}
               className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 transition-colors"
             >
-              <option value="ALL">All Priorities</option>
+              <option value="ALL">All Priority Levels</option>
               <option value="CRITICAL">Critical Priority</option>
               <option value="HIGH">High Priority</option>
               <option value="NORMAL">Normal Priority</option>
@@ -421,7 +428,7 @@ export const OrdersPage: React.FC = () => {
         <div className="p-3 rounded-xl bg-indigo-950/80 border border-indigo-500/40 flex items-center justify-between text-xs animate-in fade-in">
           <div className="flex items-center space-x-2 text-indigo-300">
             <CheckSquare className="w-4 h-4 text-indigo-400" />
-            <span><strong className="text-white">{selectedOrderIds.length}</strong> orders selected for bulk inspection</span>
+            <span><strong className="text-white">{selectedOrderIds.length}</strong> orders selected for bulk priority analysis</span>
           </div>
           <button
             onClick={() => setSelectedOrderIds([])}
@@ -432,7 +439,7 @@ export const OrdersPage: React.FC = () => {
         </div>
       )}
 
-      {/* Main Order Table */}
+      {/* Main Order Table with Priority Engine Scores */}
       <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -462,7 +469,8 @@ export const OrdersPage: React.FC = () => {
                   className="p-3 text-center cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center justify-center space-x-1">
-                    <span>Priority</span>
+                    <TrendingUp className="w-3 h-3 text-indigo-400" />
+                    <span>Priority Score</span>
                     <ArrowUpDown className="w-3 h-3 text-slate-500" />
                   </div>
                 </th>
@@ -491,7 +499,8 @@ export const OrdersPage: React.FC = () => {
                   className="p-3 text-center cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center justify-center space-x-1">
-                    <span>Risk Level</span>
+                    <Cpu className="w-3 h-3 text-amber-400" />
+                    <span>Risk Score</span>
                     <ArrowUpDown className="w-3 h-3 text-slate-500" />
                   </div>
                 </th>
@@ -506,9 +515,9 @@ export const OrdersPage: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredOrders.map((order) => {
-                  const shortage = checkOrderShortage(order);
+                filteredOrders.map(({ order, assessment }) => {
                   const isSelected = selectedOrderIds.includes(order.id);
+                  const shortage = assessment.shortageInfo;
 
                   return (
                     <tr
@@ -537,9 +546,14 @@ export const OrdersPage: React.FC = () => {
                       </td>
                       <td className="p-3 font-medium text-white">{order.customer}</td>
                       <td className="p-3 text-center">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border ${getPriorityBadge(order.priority)}`}>
-                          {order.priority}
-                        </span>
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border ${getPriorityBadge(assessment.priorityLevel)}`}>
+                            {assessment.priorityLevel}
+                          </span>
+                          <span className="text-xs font-mono font-bold text-indigo-300">
+                            {assessment.priorityScore}/100
+                          </span>
+                        </div>
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex items-center justify-center space-x-1">
@@ -568,16 +582,18 @@ export const OrdersPage: React.FC = () => {
                           {order.allocationStatus}
                         </span>
                       </td>
-                      <td className="p-3 text-center font-bold text-xs">
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded ${
-                            order.riskLevel === 'CRITICAL' || order.riskLevel === 'HIGH'
-                              ? 'text-rose-400 font-bold'
-                              : 'text-slate-400'
-                          }`}
-                        >
-                          {order.riskLevel}
-                        </span>
+                      <td className="p-3 text-center">
+                        <div className="flex items-center justify-center space-x-1">
+                          <span
+                            className={`text-[10px] px-2 py-0.5 rounded border font-bold ${
+                              assessment.riskLevel === 'CRITICAL' || assessment.riskLevel === 'HIGH'
+                                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                                : 'bg-slate-950 text-slate-400 border-slate-800'
+                            }`}
+                          >
+                            {assessment.riskLevel} ({assessment.riskScore})
+                          </span>
+                        </div>
                       </td>
                       <td className="p-3 text-right">
                         <button
@@ -587,7 +603,7 @@ export const OrdersPage: React.FC = () => {
                           }}
                           className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs transition-colors inline-flex items-center gap-1"
                         >
-                          <Eye className="w-3.5 h-3.5" /> Details
+                          <Eye className="w-3.5 h-3.5" /> Assessment
                         </button>
                       </td>
                     </tr>
