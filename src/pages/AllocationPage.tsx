@@ -95,7 +95,7 @@ export const AllocationPage: React.FC = () => {
           </div>
           <div className="p-5 flex-1 space-y-4">
             <p className="text-slate-300 text-sm">
-              Two orders are requesting the same SKU (SKU-1002) but inventory is insufficient to fulfill both.
+              Two orders are requesting the same SKU (WM-104) but inventory is insufficient to fulfill both.
             </p>
             
             <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
