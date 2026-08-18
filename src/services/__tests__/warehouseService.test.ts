@@ -65,4 +65,35 @@ describe('WarehouseService', () => {
     expect(WarehouseService.getDecisions().length).toBeGreaterThan(0);
     expect(WarehouseService.getAlerts().length).toBeGreaterThan(0);
   });
+
+  it('should detect negative inventory quantities as consistency violations', () => {
+    const inventory = WarehouseService.getInventory();
+    const modified = inventory.map((item) =>
+      item.sku === 'WM-101' ? { ...item, availableQuantity: -5 } : item
+    );
+    WarehouseService.saveInventory(modified);
+
+    const integrity = WarehouseService.validateConsistency();
+    expect(integrity.valid).toBe(false);
+    expect(integrity.errors.some((e) => e.includes('negative quantity values'))).toBe(true);
+  });
+
+  it('should detect inventory with non-existent SKUs as consistency violations', () => {
+    const inventory = WarehouseService.getInventory();
+    const modified = [
+      ...inventory,
+      {
+        ...inventory[0],
+        id: 'INV-UNKNOWN',
+        sku: 'NON-EXISTENT-SKU-999',
+        productId: 'PROD-UNKNOWN',
+        productName: 'Unknown Product',
+      },
+    ];
+    WarehouseService.saveInventory(modified);
+
+    const integrity = WarehouseService.validateConsistency();
+    expect(integrity.valid).toBe(false);
+    expect(integrity.errors.some((e) => e.includes('NON-EXISTENT-SKU-999'))).toBe(true);
+  });
 });

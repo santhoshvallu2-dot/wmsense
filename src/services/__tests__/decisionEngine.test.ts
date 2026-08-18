@@ -49,4 +49,13 @@ describe('DecisionEngine', () => {
       expect(dateA).toBeGreaterThanOrEqual(dateB);
     }
   });
+
+  it('should handle empty datasets without throwing runtime exceptions', () => {
+    WarehouseService.saveOrders([]);
+    WarehouseService.saveInventory([]);
+    WarehouseService.saveExceptions([]);
+
+    const auditTrail = DecisionEngine.generateDecisionAuditTrail();
+    expect(Array.isArray(auditTrail)).toBe(true);
+  });
 });

@@ -95,4 +95,23 @@ describe('AnalyticsEngine', () => {
     expect(actions[0].title.length).toBeGreaterThan(0);
     expect(actions[0].route.length).toBeGreaterThan(0);
   });
+
+  it('should handle zero orders gracefully without NaN or division by zero in KPIs and fulfillment rate', () => {
+    WarehouseService.saveOrders([]);
+    WarehouseService.saveInventory([]);
+    WarehouseService.saveExceptions([]);
+
+    const kpis = AnalyticsEngine.calculateOperationalKPIs();
+    expect(kpis.totalOrders).toBe(0);
+    expect(kpis.totalSKUs).toBe(0);
+
+    const fulfillment = AnalyticsEngine.calculateFulfillmentRate();
+    expect(fulfillment.rate).toBe(0);
+    expect(Number.isNaN(fulfillment.rate)).toBe(false);
+
+    const health = AnalyticsEngine.calculateWarehouseHealthScore();
+    expect(health.score).toBeGreaterThanOrEqual(0);
+    expect(health.score).toBeLessThanOrEqual(100);
+    expect(Number.isNaN(health.score)).toBe(false);
+  });
 });
