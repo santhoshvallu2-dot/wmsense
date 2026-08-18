@@ -118,17 +118,10 @@ export const OrdersPage: React.FC = () => {
             : b.assessment.riskScore - a.assessment.riskScore;
         }
 
-        let valA: any = a.order[sortField as keyof Order];
-        let valB: any = b.order[sortField as keyof Order];
-
-        if (typeof valA === 'string') {
-          valA = valA.toLowerCase();
-          valB = valB.toLowerCase();
-        }
-
-        if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-        if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
-        return 0;
+        const valA = String(a.order[sortField] ?? '');
+        const valB = String(b.order[sortField] ?? '');
+        const comp = valA.localeCompare(valB, undefined, { numeric: true });
+        return sortOrder === 'asc' ? comp : -comp;
       });
   }, [assessedOrders, searchTerm, priorityFilter, statusFilter, riskFilter, sortField, sortOrder]);
 
@@ -366,22 +359,24 @@ export const OrdersPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Search Box */}
           <div className="relative lg:col-span-2">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
             <input
               type="text"
+              aria-label="Search orders by ID, customer name, or SKU"
               placeholder="Search by Order ID (e.g. ORD-1024), Customer, SKU..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
             />
           </div>
 
           {/* Priority Filter */}
           <div>
             <select
+              aria-label="Filter orders by priority level"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
             >
               <option value="ALL">All Priority Levels</option>
               <option value="CRITICAL">Critical Priority</option>
@@ -394,9 +389,10 @@ export const OrdersPage: React.FC = () => {
           {/* Risk Filter */}
           <div>
             <select
+              aria-label="Filter orders by risk level"
               value={riskFilter}
               onChange={(e) => setRiskFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
             >
               <option value="ALL">All Risk Levels</option>
               <option value="CRITICAL">Critical Risk</option>
@@ -414,10 +410,11 @@ export const OrdersPage: React.FC = () => {
               Showing <span className="font-bold text-white">{filteredOrders.length}</span> of {totalOrders} orders
             </div>
             <button
+              type="button"
               onClick={handleClearFilters}
-              className="text-xs text-rose-400 hover:text-rose-300 font-medium flex items-center gap-1"
+              className="text-xs text-rose-400 hover:text-rose-300 font-medium flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none"
             >
-              <XCircle className="w-3.5 h-3.5" /> Clear All Filters
+              <XCircle className="w-3.5 h-3.5" aria-hidden="true" /> Clear All Filters
             </button>
           </div>
         )}
@@ -427,12 +424,13 @@ export const OrdersPage: React.FC = () => {
       {selectedOrderIds.length > 0 && (
         <div className="p-3 rounded-xl bg-indigo-950/80 border border-indigo-500/40 flex items-center justify-between text-xs animate-in fade-in">
           <div className="flex items-center space-x-2 text-indigo-300">
-            <CheckSquare className="w-4 h-4 text-indigo-400" />
+            <CheckSquare className="w-4 h-4 text-indigo-400" aria-hidden="true" />
             <span><strong className="text-white">{selectedOrderIds.length}</strong> orders selected for bulk priority analysis</span>
           </div>
           <button
+            type="button"
             onClick={() => setSelectedOrderIds([])}
-            className="text-xs text-slate-400 hover:text-white"
+            className="text-xs text-slate-400 hover:text-white focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
           >
             Deselect All
           </button>
@@ -443,68 +441,74 @@ export const OrdersPage: React.FC = () => {
       <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
+            <caption className="sr-only">Order priority queue, risk rankings, and fulfillment statuses</caption>
             <thead className="text-slate-400 uppercase bg-slate-950/80 font-mono text-[10px] border-b border-slate-800">
               <tr>
-                <th className="p-3 w-8">
-                  <button onClick={toggleSelectAll} className="text-slate-400 hover:text-white">
+                <th scope="col" className="p-3 w-8">
+                  <button type="button" aria-label="Select all orders" onClick={toggleSelectAll} className="text-slate-400 hover:text-white">
                     {selectedOrderIds.length === filteredOrders.length && filteredOrders.length > 0 ? (
-                      <CheckSquare className="w-4 h-4 text-indigo-400" />
+                      <CheckSquare className="w-4 h-4 text-indigo-400" aria-hidden="true" />
                     ) : (
-                      <Square className="w-4 h-4 text-slate-600" />
+                      <Square className="w-4 h-4 text-slate-600" aria-hidden="true" />
                     )}
                   </button>
                 </th>
                 <th
+                  scope="col"
                   onClick={() => handleSort('id')}
                   className="p-3 cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center space-x-1">
                     <span>Order ID</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    <ArrowUpDown className="w-3 h-3 text-slate-500" aria-hidden="true" />
                   </div>
                 </th>
-                <th className="p-3">Customer</th>
+                <th scope="col" className="p-3">Customer</th>
                 <th
+                  scope="col"
                   onClick={() => handleSort('priority')}
                   className="p-3 text-center cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center justify-center space-x-1">
-                    <TrendingUp className="w-3 h-3 text-indigo-400" />
+                    <TrendingUp className="w-3 h-3 text-indigo-400" aria-hidden="true" />
                     <span>Priority Score</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    <ArrowUpDown className="w-3 h-3 text-slate-500" aria-hidden="true" />
                   </div>
                 </th>
-                <th className="p-3 text-center">Items (SKUs)</th>
+                <th scope="col" className="p-3 text-center">Items (SKUs)</th>
                 <th
+                  scope="col"
                   onClick={() => handleSort('dispatchDeadline')}
                   className="p-3 text-center cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center justify-center space-x-1">
                     <span>Dispatch Deadline</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    <ArrowUpDown className="w-3 h-3 text-slate-500" aria-hidden="true" />
                   </div>
                 </th>
                 <th
+                  scope="col"
                   onClick={() => handleSort('status')}
                   className="p-3 text-center cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center justify-center space-x-1">
                     <span>Status</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    <ArrowUpDown className="w-3 h-3 text-slate-500" aria-hidden="true" />
                   </div>
                 </th>
-                <th className="p-3 text-center">Allocation</th>
+                <th scope="col" className="p-3 text-center">Allocation</th>
                 <th
+                  scope="col"
                   onClick={() => handleSort('riskLevel')}
                   className="p-3 text-center cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center justify-center space-x-1">
-                    <Cpu className="w-3 h-3 text-amber-400" />
+                    <Cpu className="w-3 h-3 text-amber-400" aria-hidden="true" />
                     <span>Risk Score</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    <ArrowUpDown className="w-3 h-3 text-slate-500" aria-hidden="true" />
                   </div>
                 </th>
-                <th className="p-3 text-right">Actions</th>
+                <th scope="col" className="p-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">

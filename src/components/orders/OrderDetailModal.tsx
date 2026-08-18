@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { Order } from '../../types/warehouse';
 import { WarehouseService } from '../../services/warehouseService';
 import { PriorityEngine } from '../../services/priorityEngine';
@@ -27,6 +27,16 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   order,
   onClose,
 }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   if (!order) return null;
 
   const inventory = WarehouseService.getInventory();
@@ -131,17 +141,22 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const hasShortage = itemShortages.some((i) => i.shortage > 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="order-detail-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200"
+    >
       <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="p-6 border-b border-slate-800/80 flex items-start justify-between bg-slate-900/90">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold" aria-hidden="true">
               <ClipboardList className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h3 className="text-lg font-bold text-white font-mono tracking-tight">{order.id}</h3>
+                <h3 id="order-detail-title" className="text-lg font-bold text-white font-mono tracking-tight">{order.id}</h3>
                 <span className={`text-[10px] px-2.5 py-0.5 rounded-full border ${getPriorityBadge(assessment.priorityLevel)}`}>
                   {assessment.priorityLevel}
                 </span>
@@ -150,14 +165,16 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-slate-500" />
+                <User className="w-3.5 h-3.5 text-slate-500" aria-hidden="true" />
                 <span>Customer: <strong className="text-white">{order.customer}</strong></span>
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+            aria-label="Close order details modal"
+            className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
           >
             <X className="w-5 h-5" />
           </button>
@@ -295,15 +312,16 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
             <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 overflow-x-auto">
               <table className="w-full text-left text-xs">
+                <caption className="sr-only">Order items breakdown and allocation status</caption>
                 <thead className="text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
                   <tr>
-                    <th className="pb-2">SKU</th>
-                    <th className="pb-2">Product Name</th>
-                    <th className="pb-2 text-center">Req Qty</th>
-                    <th className="pb-2 text-center">Avail Stock</th>
-                    <th className="pb-2 text-center">Allocated</th>
-                    <th className="pb-2 text-center">Picked</th>
-                    <th className="pb-2 text-right">Unit Price</th>
+                    <th scope="col" className="pb-2">SKU</th>
+                    <th scope="col" className="pb-2">Product Name</th>
+                    <th scope="col" className="pb-2 text-center">Req Qty</th>
+                    <th scope="col" className="pb-2 text-center">Avail Stock</th>
+                    <th scope="col" className="pb-2 text-center">Allocated</th>
+                    <th scope="col" className="pb-2 text-center">Picked</th>
+                    <th scope="col" className="pb-2 text-right">Unit Price</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
@@ -377,8 +395,9 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
         {/* Footer */}
         <div className="p-4 border-t border-slate-800 bg-slate-900/90 flex justify-end">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors"
+            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
           >
             Close Detail
           </button>

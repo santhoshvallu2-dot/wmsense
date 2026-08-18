@@ -408,13 +408,14 @@ export const DashboardPage: React.FC = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
+              <caption className="sr-only">Low stock and out-of-stock inventory items requiring replenishment</caption>
               <thead className="text-slate-400 uppercase bg-slate-950/60 font-mono text-[10px]">
                 <tr>
-                  <th className="p-2.5 rounded-l-lg">SKU</th>
-                  <th className="p-2.5">Product Name</th>
-                  <th className="p-2.5 text-center">Available</th>
-                  <th className="p-2.5 text-center">Reorder Level</th>
-                  <th className="p-2.5 text-right rounded-r-lg">Status</th>
+                  <th scope="col" className="p-2.5 rounded-l-lg">SKU</th>
+                  <th scope="col" className="p-2.5">Product Name</th>
+                  <th scope="col" className="p-2.5 text-center">Available</th>
+                  <th scope="col" className="p-2.5 text-center">Reorder Level</th>
+                  <th scope="col" className="p-2.5 text-right rounded-r-lg">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">

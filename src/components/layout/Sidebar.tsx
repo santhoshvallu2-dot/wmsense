@@ -84,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
         </div>
 
         {/* Navigation Section */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5">
+        <nav aria-label="Sidebar Navigation" className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5">
           <div className="px-3 pb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
             Operational Modules
           </div>
@@ -97,7 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
                 to={item.path}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                  `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
                     isActive
                       ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-semibold'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
@@ -111,6 +111,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
                         className={`w-5 h-5 shrink-0 transition-colors ${
                           isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-400'
                         }`}
+                        aria-hidden="true"
                       />
                       <span className="truncate">{item.name}</span>
                     </div>
@@ -132,6 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
                           className={`w-4 h-4 transition-transform duration-200 opacity-0 group-hover:opacity-100 ${
                             isActive ? 'opacity-100 text-white' : 'text-slate-500'
                           }`}
+                          aria-hidden="true"
                         />
                       )}
                     </div>
@@ -140,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
               </NavLink>
             );
           })}
-        </div>
+        </nav>
 
         {/* Demo Footer Status */}
         <div className="p-4 border-t border-slate-800/80 bg-slate-900/50">

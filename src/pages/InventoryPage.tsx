@@ -71,17 +71,10 @@ export const InventoryPage: React.FC = () => {
         return matchesSearch && matchesStatus && matchesCategory && matchesZone;
       })
       .sort((a, b) => {
-        let valA: any = a[sortField];
-        let valB: any = b[sortField];
-
-        if (typeof valA === 'string') {
-          valA = valA.toLowerCase();
-          valB = valB.toLowerCase();
-        }
-
-        if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-        if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
-        return 0;
+        const valA = String(a[sortField] ?? '');
+        const valB = String(b[sortField] ?? '');
+        const comp = valA.localeCompare(valB, undefined, { numeric: true });
+        return sortOrder === 'asc' ? comp : -comp;
       });
   }, [inventory, searchTerm, statusFilter, categoryFilter, zoneFilter, sortField, sortOrder]);
 
@@ -141,7 +134,7 @@ export const InventoryPage: React.FC = () => {
             <h3 className="text-2xl font-bold text-white mt-1">{totalSKUs}</h3>
             <p className="text-[11px] text-slate-400 mt-1">Active Catalog Items</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center" aria-hidden="true">
             <Boxes className="w-5 h-5" />
           </div>
         </div>
@@ -152,7 +145,7 @@ export const InventoryPage: React.FC = () => {
             <h3 className="text-2xl font-bold text-amber-400 mt-1">{lowStockCount}</h3>
             <p className="text-[11px] text-amber-400/80 mt-1">Below Reorder Level</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center" aria-hidden="true">
             <AlertTriangle className="w-5 h-5" />
           </div>
         </div>
@@ -163,7 +156,7 @@ export const InventoryPage: React.FC = () => {
             <h3 className="text-2xl font-bold text-rose-400 mt-1">{outOfStockCount}</h3>
             <p className="text-[11px] text-rose-400/80 mt-1">Immediate Stockout</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center" aria-hidden="true">
             <XCircle className="w-5 h-5" />
           </div>
         </div>
@@ -174,7 +167,7 @@ export const InventoryPage: React.FC = () => {
             <h3 className="text-2xl font-bold text-purple-400 mt-1">{damagedCount}</h3>
             <p className="text-[11px] text-purple-400/80 mt-1">Quarantine Inspection</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center" aria-hidden="true">
             <Layers className="w-5 h-5" />
           </div>
         </div>
@@ -184,7 +177,7 @@ export const InventoryPage: React.FC = () => {
       {wm104Item && (
         <div className="p-5 rounded-2xl bg-gradient-to-r from-rose-950/70 via-slate-900 to-amber-950/60 border border-rose-500/40 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-start space-x-3">
-            <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 shrink-0 mt-0.5">
+            <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 shrink-0 mt-0.5" aria-hidden="true">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
@@ -200,10 +193,11 @@ export const InventoryPage: React.FC = () => {
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setSelectedItem(wm104Item)}
-            className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 font-bold text-xs transition-colors shrink-0 flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 font-bold text-xs transition-colors shrink-0 flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none"
           >
-            <Eye className="w-4 h-4" /> View WM-104 Detail
+            <Eye className="w-4 h-4" aria-hidden="true" /> View WM-104 Detail
           </button>
         </div>
       )}
@@ -213,22 +207,24 @@ export const InventoryPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* Search Box */}
           <div className="relative lg:col-span-2">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
             <input
               type="text"
+              aria-label="Search inventory by SKU, product name, or category"
               placeholder="Search by SKU, Product Name, Category..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
             />
           </div>
 
           {/* Status Filter */}
           <div>
             <select
+              aria-label="Filter inventory by status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
             >
               <option value="ALL">All Statuses</option>
               <option value="IN_STOCK">In Stock</option>
@@ -242,9 +238,10 @@ export const InventoryPage: React.FC = () => {
           {/* Category Filter */}
           <div>
             <select
+              aria-label="Filter inventory by category"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
             >
               <option value="ALL">All Categories</option>
               {categories.map((cat) => (
@@ -256,9 +253,10 @@ export const InventoryPage: React.FC = () => {
           {/* Zone Filter */}
           <div>
             <select
+              aria-label="Filter inventory by warehouse zone"
               value={zoneFilter}
               onChange={(e) => setZoneFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
             >
               <option value="ALL">All Zones</option>
               {zones.map((z) => (
@@ -275,10 +273,11 @@ export const InventoryPage: React.FC = () => {
               Showing <span className="font-bold text-white">{filteredInventory.length}</span> of {inventory.length} items
             </div>
             <button
+              type="button"
               onClick={handleClearFilters}
-              className="text-xs text-rose-400 hover:text-rose-300 font-medium flex items-center gap-1"
+              className="text-xs text-rose-400 hover:text-rose-300 font-medium flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none"
             >
-              <XCircle className="w-3.5 h-3.5" /> Clear All Filters
+              <XCircle className="w-3.5 h-3.5" aria-hidden="true" /> Clear All Filters
             </button>
           </div>
         )}
@@ -288,51 +287,65 @@ export const InventoryPage: React.FC = () => {
       <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
+            <caption className="sr-only">Warehouse inventory catalog with stock levels, bin locations, and status</caption>
             <thead className="text-slate-400 uppercase bg-slate-950/80 font-mono text-[10px] border-b border-slate-800">
               <tr>
                 <th
+                  scope="col"
                   onClick={() => handleSort('sku')}
                   className="p-3 cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center space-x-1">
                     <span>SKU</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    <ArrowUpDown className="w-3 h-3 text-slate-500" aria-hidden="true" />
                   </div>
                 </th>
-                <th className="p-3">Product Name</th>
-                <th className="p-3">Category</th>
-                <th className="p-3 text-center">Zone / Bin</th>
-                <th className="p-3 text-center">Total</th>
+                <th scope="col" className="p-3">Product Name</th>
+                <th scope="col" className="p-3">Category</th>
+                <th scope="col" className="p-3 text-center">Zone / Bin</th>
+                <th scope="col" className="p-3 text-center">Total</th>
                 <th
+                  scope="col"
                   onClick={() => handleSort('availableQuantity')}
                   className="p-3 text-center cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center justify-center space-x-1">
                     <span>Available</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    <ArrowUpDown className="w-3 h-3 text-slate-500" aria-hidden="true" />
                   </div>
                 </th>
                 <th
+                  scope="col"
                   onClick={() => handleSort('reservedQuantity')}
                   className="p-3 text-center cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center justify-center space-x-1">
                     <span>Reserved</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    <ArrowUpDown className="w-3 h-3 text-slate-500" aria-hidden="true" />
                   </div>
                 </th>
-                <th className="p-3 text-center">Damaged</th>
+                <th scope="col" className="p-3 text-center">Damaged</th>
                 <th
+                  scope="col"
                   onClick={() => handleSort('reorderLevel')}
                   className="p-3 text-center cursor-pointer hover:text-white transition-colors"
                 >
                   <div className="flex items-center justify-center space-x-1">
                     <span>Reorder</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    <ArrowUpDown className="w-3 h-3 text-slate-500" aria-hidden="true" />
                   </div>
                 </th>
-                <th className="p-3 text-center">Status</th>
-                <th className="p-3 text-right">Actions</th>
+                <th
+                  scope="col"
+                  onClick={() => handleSort('status')}
+                  className="p-3 text-center cursor-pointer hover:text-white transition-colors"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Status</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-500" aria-hidden="true" />
+                  </div>
+                </th>
+                <th scope="col" className="p-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">

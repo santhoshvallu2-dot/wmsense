@@ -97,16 +97,17 @@ export const DispatchPage: React.FC = () => {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
+            <caption className="sr-only">Outbound shipments and carrier tracking status</caption>
             <thead className="text-xs text-slate-400 bg-slate-900/80 border-b border-slate-800 uppercase">
               <tr>
-                <th className="px-4 py-3 font-medium">Dispatch ID</th>
-                <th className="px-4 py-3 font-medium">Order</th>
-                <th className="px-4 py-3 font-medium">Customer</th>
-                <th className="px-4 py-3 font-medium">Carrier & Tracking</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Items</th>
-                <th className="px-4 py-3 font-medium">Ready At</th>
-                <th className="px-4 py-3 font-medium">Dispatched At</th>
+                <th scope="col" className="px-4 py-3 font-medium">Dispatch ID</th>
+                <th scope="col" className="px-4 py-3 font-medium">Order</th>
+                <th scope="col" className="px-4 py-3 font-medium">Customer</th>
+                <th scope="col" className="px-4 py-3 font-medium">Carrier & Tracking</th>
+                <th scope="col" className="px-4 py-3 font-medium">Status</th>
+                <th scope="col" className="px-4 py-3 font-medium">Items</th>
+                <th scope="col" className="px-4 py-3 font-medium">Ready At</th>
+                <th scope="col" className="px-4 py-3 font-medium">Dispatched At</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">

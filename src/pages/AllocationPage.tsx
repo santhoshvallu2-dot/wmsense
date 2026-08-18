@@ -46,9 +46,10 @@ export const AllocationPage: React.FC = () => {
           <p className="text-slate-400 mt-1">Priority-based inventory distribution and shortage resolution</p>
         </div>
         <button 
+          type="button"
           onClick={handleRunAllocation}
           disabled={isAllocating || hasRunAllocation}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none ${
             isAllocating 
               ? 'bg-amber-500/50 text-white cursor-wait'
               : hasRunAllocation 
@@ -57,11 +58,11 @@ export const AllocationPage: React.FC = () => {
           }`}
         >
           {isAllocating ? (
-            <><Activity className="w-5 h-5 animate-spin" /> Processing...</>
+            <><Activity className="w-5 h-5 animate-spin" aria-hidden="true" /> Processing...</>
           ) : hasRunAllocation ? (
-            <><CheckCircle2 className="w-5 h-5" /> Allocation Complete</>
+            <><CheckCircle2 className="w-5 h-5" aria-hidden="true" /> Allocation Complete</>
           ) : (
-            <><Play className="w-5 h-5" /> Run Smart Allocation</>
+            <><Play className="w-5 h-5" aria-hidden="true" /> Run Smart Allocation</>
           )}
         </button>
       </div>
@@ -76,7 +77,7 @@ export const AllocationPage: React.FC = () => {
         ].map((kpi, idx) => (
           <div key={idx} className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 flex items-center gap-4">
             <div className={`p-3 rounded-xl ${kpi.bg}`}>
-              <kpi.icon className={`w-6 h-6 ${kpi.color}`} />
+              <kpi.icon className={`w-6 h-6 ${kpi.color}`} aria-hidden="true" />
             </div>
             <div>
               <p className="text-slate-400 text-sm">{kpi.label}</p>
@@ -90,7 +91,7 @@ export const AllocationPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 bg-slate-900/60 rounded-2xl border border-amber-500/20 overflow-hidden flex flex-col">
           <div className="bg-amber-500/10 border-b border-amber-500/20 p-4 flex items-center gap-3">
-            <Beaker className="w-5 h-5 text-amber-400" />
+            <Beaker className="w-5 h-5 text-amber-400" aria-hidden="true" />
             <h2 className="text-lg font-semibold text-amber-400">Conflict Scenario (WM-104)</h2>
           </div>
           <div className="p-5 flex-1 space-y-4">
@@ -103,7 +104,7 @@ export const AllocationPage: React.FC = () => {
                 <span className="text-slate-400">Available Inventory:</span>
                 <span className="font-mono font-bold text-white">7 units</span>
               </div>
-              <div className="h-px w-full bg-slate-800"></div>
+              <div className="h-px w-full bg-slate-800" aria-hidden="true"></div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-rose-400 font-mono">ORD-1024 (CRITICAL)</span>
                 <span className="font-mono text-white">Needs 10</span>
@@ -117,7 +118,7 @@ export const AllocationPage: React.FC = () => {
             {hasRunAllocation && (
               <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-2 animate-in fade-in slide-in-from-bottom-4">
                 <h3 className="text-emerald-400 text-sm font-semibold flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4" /> Resolution Applied
+                  <ShieldAlert className="w-4 h-4" aria-hidden="true" /> Resolution Applied
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   Priority Engine identified ORD-1024 as CRITICAL. All 7 available units allocated to ORD-1024 (Partial). ORD-1025 receives 0 units (Blocked).
@@ -130,20 +131,21 @@ export const AllocationPage: React.FC = () => {
         {/* Allocations Table */}
         <div className="lg:col-span-2 bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden">
           <div className="p-4 border-b border-slate-800 flex items-center gap-3">
-            <Database className="w-5 h-5 text-slate-400" />
+            <Database className="w-5 h-5 text-slate-400" aria-hidden="true" />
             <h2 className="text-lg font-semibold text-white">Active Allocations</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
+              <caption className="sr-only">Inventory allocation status and priority distribution by order</caption>
               <thead>
                 <tr className="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider">
-                  <th className="p-4 font-medium">Order ID</th>
-                  <th className="p-4 font-medium">SKU</th>
-                  <th className="p-4 font-medium text-right">Requested</th>
-                  <th className="p-4 font-medium text-right">Allocated</th>
-                  <th className="p-4 font-medium text-right">Shortage</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium">Reason</th>
+                  <th scope="col" className="p-4 font-medium">Order ID</th>
+                  <th scope="col" className="p-4 font-medium">SKU</th>
+                  <th scope="col" className="p-4 font-medium text-right">Requested</th>
+                  <th scope="col" className="p-4 font-medium text-right">Allocated</th>
+                  <th scope="col" className="p-4 font-medium text-right">Shortage</th>
+                  <th scope="col" className="p-4 font-medium">Status</th>
+                  <th scope="col" className="p-4 font-medium">Reason</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800 text-sm">

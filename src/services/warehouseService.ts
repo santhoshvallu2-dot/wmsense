@@ -43,12 +43,22 @@ const STORAGE_KEYS = {
   ALERTS: 'wmsense_alerts',
 };
 
-// Helper for local storage reading with fallback
+// Helper for local storage reading with fallback and prototype pollution protection
 function loadFromStorage<T>(key: string, fallback: T): T {
   try {
     const item = localStorage.getItem(key);
     if (!item) return fallback;
-    return JSON.parse(item) as T;
+    const parsed = JSON.parse(item, (k, v) => {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') {
+        return undefined;
+      }
+      return v;
+    });
+
+    if (Array.isArray(fallback) && !Array.isArray(parsed)) {
+      return fallback;
+    }
+    return (parsed as T) ?? fallback;
   } catch (error) {
     console.warn(`Error reading localStorage key "${key}":`, error);
     return fallback;

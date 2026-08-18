@@ -55,17 +55,18 @@ export const PackingPage: React.FC = () => {
         {/* Packing Tasks Table */}
         <div className="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden flex flex-col">
           <div className="p-4 border-b border-slate-800 flex items-center gap-3 bg-slate-900/80">
-            <Box className="w-5 h-5 text-cyan-500" />
+            <Box className="w-5 h-5 text-cyan-500" aria-hidden="true" />
             <h2 className="text-lg font-semibold text-white">Packing Queue</h2>
           </div>
           <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse text-xs">
+              <caption className="sr-only">Active order packing queue and station assignments</caption>
               <thead>
-                <tr className="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider">
-                  <th className="p-4 font-medium">Task ID</th>
-                  <th className="p-4 font-medium">Order ID</th>
-                  <th className="p-4 font-medium">Station</th>
-                  <th className="p-4 font-medium">Status</th>
+                <tr className="bg-slate-950/50 text-slate-400 uppercase tracking-wider font-mono text-[10px]">
+                  <th scope="col" className="p-4 font-medium">Task ID</th>
+                  <th scope="col" className="p-4 font-medium">Order ID</th>
+                  <th scope="col" className="p-4 font-medium">Station</th>
+                  <th scope="col" className="p-4 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800 text-sm">
@@ -98,18 +99,19 @@ export const PackingPage: React.FC = () => {
         {/* Quality Checks Table */}
         <div className="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden flex flex-col">
           <div className="p-4 border-b border-slate-800 flex items-center gap-3 bg-slate-900/80">
-            <ClipboardCheck className="w-5 h-5 text-indigo-500" />
+            <ClipboardCheck className="w-5 h-5 text-indigo-500" aria-hidden="true" />
             <h2 className="text-lg font-semibold text-white">Quality Control (QC)</h2>
           </div>
           <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse text-xs">
+              <caption className="sr-only">Quality inspection results for checked orders</caption>
               <thead>
-                <tr className="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider">
-                  <th className="p-4 font-medium">QC ID</th>
-                  <th className="p-4 font-medium">Order</th>
-                  <th className="p-4 font-medium">Checks</th>
-                  <th className="p-4 font-medium">Inspector</th>
-                  <th className="p-4 font-medium">Result</th>
+                <tr className="bg-slate-950/50 text-slate-400 uppercase tracking-wider font-mono text-[10px]">
+                  <th scope="col" className="p-4 font-medium">QC ID</th>
+                  <th scope="col" className="p-4 font-medium">Order</th>
+                  <th scope="col" className="p-4 font-medium">Checks (SKU/Qty/Dmg/Pkg)</th>
+                  <th scope="col" className="p-4 font-medium">Inspector</th>
+                  <th scope="col" className="p-4 font-medium">Result</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800 text-sm">
@@ -118,22 +120,22 @@ export const PackingPage: React.FC = () => {
                     <td className="p-4 font-mono text-white">{qc.id}</td>
                     <td className="p-4 font-mono text-slate-300">{qc.orderId}</td>
                     <td className="p-4">
-                      <div className="flex gap-1">
-                        <div className={`w-2 h-2 rounded-full ${qc.skuCheck ? 'bg-emerald-500' : 'bg-rose-500'}`} title="SKU Match"></div>
-                        <div className={`w-2 h-2 rounded-full ${qc.quantityCheck ? 'bg-emerald-500' : 'bg-rose-500'}`} title="Qty Match"></div>
-                        <div className={`w-2 h-2 rounded-full ${qc.damageCheck ? 'bg-emerald-500' : 'bg-rose-500'}`} title="Condition"></div>
-                        <div className={`w-2 h-2 rounded-full ${qc.packagingCheck ? 'bg-emerald-500' : 'bg-rose-500'}`} title="Packaging"></div>
+                      <div className="flex gap-1.5 items-center" aria-label={`Checks: SKU ${qc.skuCheck ? 'Pass' : 'Fail'}, Qty ${qc.quantityCheck ? 'Pass' : 'Fail'}, Damage ${qc.damageCheck ? 'Pass' : 'Fail'}, Packaging ${qc.packagingCheck ? 'Pass' : 'Fail'}`}>
+                        <span className={`w-2.5 h-2.5 rounded-full ${qc.skuCheck ? 'bg-emerald-500' : 'bg-rose-500'}`} title={`SKU Check: ${qc.skuCheck ? 'Passed' : 'Failed'}`}></span>
+                        <span className={`w-2.5 h-2.5 rounded-full ${qc.quantityCheck ? 'bg-emerald-500' : 'bg-rose-500'}`} title={`Quantity Check: ${qc.quantityCheck ? 'Passed' : 'Failed'}`}></span>
+                        <span className={`w-2.5 h-2.5 rounded-full ${qc.damageCheck ? 'bg-emerald-500' : 'bg-rose-500'}`} title={`Damage Check: ${qc.damageCheck ? 'Passed' : 'Failed'}`}></span>
+                        <span className={`w-2.5 h-2.5 rounded-full ${qc.packagingCheck ? 'bg-emerald-500' : 'bg-rose-500'}`} title={`Packaging Check: ${qc.packagingCheck ? 'Passed' : 'Failed'}`}></span>
                       </div>
                     </td>
                     <td className="p-4 text-slate-400">{qc.inspector}</td>
                     <td className="p-4">
                       {qc.status === 'PASS' ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">
-                          <ShieldCheck className="w-3 h-3" /> PASS
+                          <ShieldCheck className="w-3 h-3" aria-hidden="true" /> PASS
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-md text-xs font-medium">
-                          <XSquare className="w-3 h-3" /> FAIL
+                          <XSquare className="w-3 h-3" aria-hidden="true" /> FAIL
                         </span>
                       )}
                     </td>

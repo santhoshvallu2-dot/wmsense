@@ -106,16 +106,17 @@ export const ExceptionsPage: React.FC = () => {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
+            <caption className="sr-only">Warehouse operational exceptions and corrective action logs</caption>
             <thead className="text-xs text-slate-400 bg-slate-900/80 border-b border-slate-800 uppercase">
               <tr>
-                <th className="px-4 py-3 font-medium">Exception ID</th>
-                <th className="px-4 py-3 font-medium">Order</th>
-                <th className="px-4 py-3 font-medium">SKU</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Severity</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Description & Action</th>
-                <th className="px-4 py-3 font-medium">Created At</th>
+                <th scope="col" className="px-4 py-3 font-medium">Exception ID</th>
+                <th scope="col" className="px-4 py-3 font-medium">Order</th>
+                <th scope="col" className="px-4 py-3 font-medium">SKU</th>
+                <th scope="col" className="px-4 py-3 font-medium">Type</th>
+                <th scope="col" className="px-4 py-3 font-medium">Severity</th>
+                <th scope="col" className="px-4 py-3 font-medium">Status</th>
+                <th scope="col" className="px-4 py-3 font-medium">Description & Action</th>
+                <th scope="col" className="px-4 py-3 font-medium">Created At</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { InventoryItem } from '../../types/warehouse';
 import { WarehouseService } from '../../services/warehouseService';
 import {
@@ -20,6 +20,16 @@ export const InventoryDetailModal: React.FC<InventoryDetailModalProps> = ({
   item,
   onClose,
 }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   if (!item) return null;
 
   const movements = WarehouseService.getMovements().filter(
@@ -44,17 +54,22 @@ export const InventoryDetailModal: React.FC<InventoryDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="inventory-detail-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200"
+    >
       <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="p-6 border-b border-slate-800/80 flex items-start justify-between bg-slate-900/90">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold" aria-hidden="true">
               <Boxes className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h3 className="text-lg font-bold text-white tracking-tight">{item.productName}</h3>
+                <h3 id="inventory-detail-title" className="text-lg font-bold text-white tracking-tight">{item.productName}</h3>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getStatusBadge(item.status)}`}>
                   {item.status.replace('_', ' ')}
                 </span>
@@ -65,8 +80,10 @@ export const InventoryDetailModal: React.FC<InventoryDetailModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+            aria-label="Close inventory details modal"
+            className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
           >
             <X className="w-5 h-5" />
           </button>
@@ -175,8 +192,9 @@ export const InventoryDetailModal: React.FC<InventoryDetailModalProps> = ({
         {/* Footer */}
         <div className="p-4 border-t border-slate-800 bg-slate-900/90 flex justify-end">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors"
+            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
           >
             Close Detail
           </button>

@@ -146,15 +146,16 @@ export const AnalyticsPage: React.FC = () => {
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-300">
+            <caption className="sr-only">Inventory risk analysis showing SKU demand versus availability and shortage impact</caption>
             <thead className="text-xs text-slate-400 uppercase bg-slate-800/50">
               <tr>
-                <th className="px-4 py-3 rounded-tl-lg">SKU</th>
-                <th className="px-4 py-3">Product Name</th>
-                <th className="px-4 py-3 text-right">Available</th>
-                <th className="px-4 py-3 text-right">Demand</th>
-                <th className="px-4 py-3 text-right">Shortage</th>
-                <th className="px-4 py-3 text-right">Affected Orders</th>
-                <th className="px-4 py-3 rounded-tr-lg">Recommendation</th>
+                <th scope="col" className="px-4 py-3 rounded-tl-lg">SKU</th>
+                <th scope="col" className="px-4 py-3">Product Name</th>
+                <th scope="col" className="px-4 py-3 text-right">Available</th>
+                <th scope="col" className="px-4 py-3 text-right">Demand</th>
+                <th scope="col" className="px-4 py-3 text-right">Shortage</th>
+                <th scope="col" className="px-4 py-3 text-right">Affected Orders</th>
+                <th scope="col" className="px-4 py-3 rounded-tr-lg">Recommendation</th>
               </tr>
             </thead>
             <tbody>

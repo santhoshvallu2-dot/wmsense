@@ -96,7 +96,12 @@ export const DecisionCenterPage: React.FC = () => {
           </div>
           
           <div className="relative w-48 h-48 mt-6 flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+            <svg
+              role="img"
+              aria-label={`Warehouse health score: ${healthScore.score.toFixed(0)} out of 100, Rating: ${scoreTheme.level}`}
+              className="w-full h-full transform -rotate-90"
+              viewBox="0 0 100 100"
+            >
               <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
               <circle 
                 cx="50" cy="50" r="40" 

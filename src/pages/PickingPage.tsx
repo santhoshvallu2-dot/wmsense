@@ -74,16 +74,17 @@ export const PickingPage: React.FC = () => {
           <h2 className="text-lg font-semibold text-white">Active Picking Route</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse text-xs">
+            <caption className="sr-only">Active warehouse picking tasks, bin locations, and route assignments</caption>
             <thead>
-              <tr className="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider">
-                <th className="p-4 font-medium">Task ID</th>
-                <th className="p-4 font-medium">Order</th>
-                <th className="p-4 font-medium">Location</th>
-                <th className="p-4 font-medium">SKU</th>
-                <th className="p-4 font-medium text-right">Qty</th>
-                <th className="p-4 font-medium">Assigned To</th>
-                <th className="p-4 font-medium">Status</th>
+              <tr className="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider font-mono">
+                <th scope="col" className="p-4 font-medium">Task ID</th>
+                <th scope="col" className="p-4 font-medium">Order</th>
+                <th scope="col" className="p-4 font-medium">Location</th>
+                <th scope="col" className="p-4 font-medium">SKU</th>
+                <th scope="col" className="p-4 font-medium text-right">Qty</th>
+                <th scope="col" className="p-4 font-medium">Assigned To</th>
+                <th scope="col" className="p-4 font-medium">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800 text-sm">

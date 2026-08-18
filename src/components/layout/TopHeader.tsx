@@ -31,9 +31,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({ setMobileOpen }) => {
       {/* Left Area: Mobile Toggle & Page Title */}
       <div className="flex items-center space-x-3">
         <button
+          type="button"
           onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 lg:hidden transition-colors"
-          aria-label="Open Menu"
+          className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 lg:hidden transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
+          aria-label="Open sidebar menu"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -50,21 +51,25 @@ export const TopHeader: React.FC<TopHeaderProps> = ({ setMobileOpen }) => {
       <div className="flex items-center space-x-3 sm:space-x-4">
         {/* System Online Badge */}
         <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
           <span>Warehouse Online</span>
         </div>
 
         {/* Quick Search shortcut placeholder */}
         <div className="hidden xl:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-400 text-xs">
-          <Search className="w-3.5 h-3.5" />
+          <Search className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Search SKU or Order...</span>
           <kbd className="px-1.5 py-0.5 text-[10px] bg-slate-700 rounded text-slate-300 font-mono">⌘K</kbd>
         </div>
 
         {/* Notifications Icon with Alert Dot */}
-        <button className="relative p-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/50 transition-colors">
+        <button
+          type="button"
+          aria-label="System Notifications"
+          className="relative p-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/50 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
+        >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-slate-900" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-slate-900" aria-hidden="true" />
         </button>
 
         {/* User Profile */}
